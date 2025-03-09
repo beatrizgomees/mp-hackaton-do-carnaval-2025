@@ -2,7 +2,7 @@ class Bloco {
   int id;
   String title;
   String description;
-  DateTime dateTime;
+  DateTime? dateTime;
   String address;
   String completeAddress;
   String city;
@@ -45,7 +45,7 @@ class Bloco {
       'id': id,
       'title': title,
       'description': description,
-      'date_time': dateTime.toIso8601String(),
+      'date_time': dateTime!.toIso8601String(),
       'address': address,
       'complete_address': completeAddress,
       'city': city,
