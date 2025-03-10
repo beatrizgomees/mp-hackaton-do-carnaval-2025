@@ -1,4 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+ <!-- Permissões necessárias -->
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+<uses-permission android:name="android.permission.INTERNET"/>
+
+<!-- Features do dispositivo -->
+<uses-feature android:name="android.hardware.location.gps"/>
     <application
         android:label="carnaval_no_bolso_app"
         android:name="${applicationName}"
