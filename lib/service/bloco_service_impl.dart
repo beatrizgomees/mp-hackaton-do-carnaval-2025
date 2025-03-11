@@ -10,34 +10,55 @@ import 'package:latlong2/latlong.dart';
 
 
 class BlocoServiceImpl  implements BlocoService{
-
+  List<Bloco> allBlocos = []; // Lista de todos os blocos
+  List<Bloco> blocosProximos = []; // Lista apenas dos próximos blocos
+  bool isLoading = true;
+  int currentPage = 1;
   
   @override
   Future<List<Bloco>> getAllBloco() async {
-  final response = await http.get(Uri.parse(Constants.URL + '/agenda'));
-    if (response.statusCode == 200) {
-     final decodedJson = jsonDecode(response.body);
+    List<Bloco> tempBlocos = [];
+    int currentPage = 1;
+    bool hasMore = true;
 
-      final List<dynamic> jsonList = decodedJson['data']; // Ajuste conforme a chave real da API
+    while (hasMore) {
+      final response = await http.get(
+        Uri.parse('https://apis.codante.io/api/bloquinhos2025/agenda?page=$currentPage'),
+      );
 
-      final List<Bloco> blocoJson = jsonList.map((e) => Bloco(
-            id: e['id'],
-            title: e['title'],
-            description: e['description'],
-            dateTime: e['date_time'] != null ? DateTime.parse(e['date_time']) : null, // Aqui tratamos null
-            address: e['address'],
-            city: e['city'],
-            completeAddress: e['complete_address'],
-            eventUrl: e['event_url'],
-            neighboorhood: e['neighborhood'],
-            price: e['price'],
-          )).toList();
+      if (response.statusCode == 200) {
+        final decodedJson = jsonDecode(response.body);
+        final List<dynamic> jsonList = decodedJson['data']; // Ajuste conforme a estrutura da API
 
-      return blocoJson;
-          }
-    return [];
+        if (jsonList.isEmpty) {
+          hasMore = false; // Para o loop se não houver mais blocos
+        } else {
+          // Converte JSON para objetos Bloco
+          final List<Bloco> blocos = jsonList.map((e) => Bloco(
+              id: e['id'] ?? 0, // Se for null, assume 0
+              title: e['title'] ?? 'Sem título',
+              description: e['description'] ?? 'Sem descrição',
+               dateTime: e['date_time'] != null ? DateTime.parse(e['date_time']) : null,
+              address: e['address'] ?? 'Endereço não disponível',
+              city: e['city'] ?? 'Cidade desconhecida',
+              completeAddress: e['complete_address'] ?? '',
+              eventUrl: e['event_url'] ?? '',
+              neighboorhood: e['neighborhood'] ?? '',
+              price: e['price'] ?? '',
+        )).toList();
 
-  }
+          tempBlocos.addAll(blocos);
+          currentPage++; // Avança para a próxima página
+        }
+      } else {
+        print("Erro ao buscar blocos: ${response.statusCode}");
+        hasMore = false;
+      }
+      
+    }
+  return tempBlocos;
+
+}
   
   @override
   Future<Bloco> getBloco() {

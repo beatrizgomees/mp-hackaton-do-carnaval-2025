@@ -24,223 +24,222 @@ class _HomeViewState extends State<HomeView> {
     // TODO: implement initState
     super.initState();
     homeViewModel.getCurrentLocation(_currentPosition, _mapController);
+  
   }
 
   @override
   Widget build(BuildContext context) {
     return  SafeArea(
       child: Scaffold(
-        // appBar: AppBar(
-        //  leading: GestureDetector(
-        //   onTap: () {},
-        //   child: Image.asset('assets/cardapio.png')),
-
-        //   actions: [
-        //     Padding(
-        //       padding: const EdgeInsets.all(10),
-        //       child: Container(
-        //         width: 40,
-        //         height: 60,
-        //         color: Colors.amber,
-        //       ),
-        //     )
-        //   ],
-        // ),
-        // backgroundColor: Colors.white,
-        body: Stack(
-          children: [
-          SizedBox(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height,
-            child: FlutterMap(
-              mapController: _mapController,
-              options:  MapOptions(
-              initialCenter: _currentPosition ?? LatLng(-8.0476, -34.8770),
-              initialZoom: 15.0
-            ),
-              children: [
-               TileLayer( // Bring your own tiles
-          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', // For demonstration only
-          userAgentPackageName: 'com.example.app', // Add your app identifier
-          // And many more recommended properties
-               ),
-
-          if (_currentPosition != null)
-            MarkerLayer(
-              markers: [
-                Marker(
-                  child:  Icon(Icons.location_pin, color: Colors.red, size: 40),
-                  width: 40.0,
-                  height: 40.0,
-                  point: _currentPosition!,
-                  
-                ),
-              ],
-            ),
-            ],
-            
-          ),
-          
-          
-          ),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                GestureDetector(
-                onTap: () {},
-                child: Image.asset('assets/cardapio.png')),
-            Padding(
-            padding: const EdgeInsets.only(left:10, right: 10),
-            child: Container(
-              width: 40,
-              height: 40,
-              color: Colors.amber,
+        body: FutureBuilder(
+          future: Provider.of<HomeViewModel>(context, listen: false).fetchAllBlocos(),
+          builder: (context, snapshot) {
+            if(snapshot.data == null){
+              return Center(child: _connectionState(snapshot));
+            }
+          return Stack(
+            children: [
+            SizedBox(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+              child: FlutterMap(
+                mapController: _mapController,
+                options:  MapOptions(
+                initialCenter: _currentPosition ?? LatLng(-8.0476, -34.8770),
+                initialZoom: 15.0
+              ),
+                children: [
+                 TileLayer( // Bring your own tiles
+            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', // For demonstration only
+            userAgentPackageName: 'com.example.app', // Add your app identifier
+            // And many more recommended properties
                  ),
+          
+            if (_currentPosition != null)
+              MarkerLayer(
+                markers: [
+                  Marker(
+                    child:  Icon(Icons.location_pin, color: Colors.red, size: 40),
+                    width: 40.0,
+                    height: 40.0,
+                    point: _currentPosition!,
+                    
+                  ),
+                ],
               ),
               ],
+              
             ),
-          ),
-        
-            Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Padding(
-                padding: const EdgeInsets.only(left: 10, right: 10, top: 80),
-                child: Container(
-                  height: 50,
-                  padding: EdgeInsets.symmetric(horizontal: 8.0),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.all(Radius.circular(20)),
-                      boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey,
-                        blurRadius: 10,
-                          offset: Offset(2, 4), // Shadow position
-                      ),
-                    ],
-                  ),
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      fillColor: Colors.white,
-                      hoverColor: Colors.white,
-                      hintText: 'Search',
-                      suffixIcon: GestureDetector(child: Image.asset('assets/filtro.png')),
-                        prefixIcon: IconButton(
-                        icon: Icon(Icons.search),
-                          onPressed: () {
-                          homeViewModel.fetchAllBlocos();
-                      },
-                    ),
-                      border: InputBorder.none, // Remove a borda
-                    enabledBorder: InputBorder.none, // Remove a borda quando inativo
-                    focusedBorder: InputBorder.none, // Remove a borda quando focado
-                  ),
-                ),
-                ),
-               ),
-               Container(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height / 1.8,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20))
-                ),
-                child: BlocosList(),
-              // child:   SingleChildScrollView(
-                
-              //   child: Column(
-              //     mainAxisAlignment: MainAxisAlignment.center,
-              //     children: [
-              //       const Padding(
-              //         padding: EdgeInsets.all(8.0),
-              //         child: Row(
-              //           children: [
-              //             Icon(Icons.map),
-              //             Padding(
-              //               padding: EdgeInsets.all(8.0),
-              //               child: Text("Blocos Próximos de você", style: TextStyle(
-              //                 fontSize: 20
-              //               )),
-              //             ),
-              //           ],
-              //         ),
-              //       ),
-              //       FutureBuilder(
-              //       future: Provider.of<HomeViewModel>(context, listen: false).fetchAllBlocos(),
-              //       builder: (context, snapshot) {
-                                
-              //       if(snapshot.data == null){
-              //         return   Center(child: _connectionState(snapshot));
-              //       }
-              //       final blocos = snapshot.data!;
-              //       return Padding(
-              //         padding: const EdgeInsets.all(20),
-              //         child: Container(
-              //           height: 600,
-              //           child: ListView.builder(
-              //             physics: AlwaysScrollableScrollPhysics(),
-              //             itemCount: blocos.length,
-              //             itemBuilder: (context, index) {
-              //               var bloco = blocos[index];
-              //                 return GestureDetector(
-              //                   child: Padding(
-              //                     padding: const EdgeInsets.all(8.0),
-              //                     child: Container(
-              //                       width: 100,
-              //                       height: 100,
-              //                       decoration: BoxDecoration(
-              //                         color: Colors.red,
-              //                         borderRadius: BorderRadius.circular(20),
-              //                          boxShadow: const [
-              //                             BoxShadow(
-              //                               color: Colors.grey,
-              //                               blurRadius: 10,
-              //                               offset: Offset(2, 4), // Shadow position
-              //                             ),
-              //                           ],
-              //                       ),
-                                    
-              //                       child: Padding(
-              //                         padding: const EdgeInsets.all(10),
-              //                         child: Column(
-              //                           mainAxisAlignment: MainAxisAlignment.end,
-              //                           children: [
-              //                             Text(bloco.title, style: TextStyle(fontSize: 20, fontFamily: 'Poppins'),),
-              //                             Row(
-              //                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //                               children: [
-              //                                 Text(bloco.address, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
-              //                                 Text(bloco.dateTime != null ? bloco.dateTime!.hour.toString() + ':' + bloco.dateTime!.minute.toString() : 'Horário Indefinido' ),
-              //                               ],
-              //                             )
-              //                           ],
-              //                         ),
-              //                       ),
-                                  
-              //                     ),
-              //                   ),
-              //                 );
-              //             },
-              //           ),
-              //         ),
-              //       );
-              //                   }
-                      
-              //                 ),
-              //     ],
-              //   ),
-              // ),
-               ),
-              ],
+            
+            
             ),
-
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  GestureDetector(
+                  onTap: () {},
+                  child: Image.asset('assets/cardapio.png')),
+              Padding(
+              padding: const EdgeInsets.only(left:10, right: 10),
+              child: Container(
+                width: 40,
+                height: 40,
+                color: Colors.amber,
+                   ),
+                ),
+                ],
+              ),
+            ),
           
-      ]
-    ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Padding(
+                  padding: const EdgeInsets.only(left: 10, right: 10, top: 80),
+                  child: Container(
+                    height: 50,
+                    padding: EdgeInsets.symmetric(horizontal: 8.0),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                        boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          blurRadius: 10,
+                            offset: Offset(2, 4), // Shadow position
+                        ),
+                      ],
+                    ),
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        fillColor: Colors.white,
+                        hoverColor: Colors.white,
+                        hintText: 'Search',
+                        suffixIcon: GestureDetector(child: Image.asset('assets/filtro.png')),
+                          prefixIcon: IconButton(
+                          icon: Icon(Icons.search),
+                            onPressed: () {
+                            homeViewModel.fetchAllBlocos();
+                        },
+                      ),
+                        border: InputBorder.none, // Remove a borda
+                      enabledBorder: InputBorder.none, // Remove a borda quando inativo
+                      focusedBorder: InputBorder.none, // Remove a borda quando focado
+                    ),
+                  ),
+                  ),
+                 ),
+                 Padding(
+                   padding: const EdgeInsets.all(8.0),
+                   child: Container(
+                    width: MediaQuery.of(context).size.width,   
+                    height: MediaQuery.of(context).size.height / 6,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.all(Radius.circular(20))
+                    ),
+                    child: const Row(
+                      children: [
+                        Text("data")
+                      ],
+                    ),        
+                                 // child:   SingleChildScrollView(
+                    
+                                 //   child: Column(
+                                 //     mainAxisAlignment: MainAxisAlignment.center,
+                                 //     children: [
+                                 //       const Padding(
+                                 //         padding: EdgeInsets.all(8.0),
+                                 //         child: Row(
+                                 //           children: [
+                                 //             Icon(Icons.map),
+                                 //             Padding(
+                                 //               padding: EdgeInsets.all(8.0),
+                                 //               child: Text("Blocos Próximos de você", style: TextStyle(
+                                 //                 fontSize: 20
+                                 //               )),
+                                 //             ),
+                                 //           ],
+                                 //         ),
+                                 //       ),
+                                 //       FutureBuilder(
+                                 //       future: Provider.of<HomeViewModel>(context, listen: false).fetchAllBlocos(),
+                                 //       builder: (context, snapshot) {
+                                    
+                                 //       if(snapshot.data == null){
+                                 //         return   Center(child: _connectionState(snapshot));
+                                 //       }
+                                 //       final blocos = snapshot.data!;
+                                 //       return Padding(
+                                 //         padding: const EdgeInsets.all(20),
+                                 //         child: Container(
+                                 //           height: 600,
+                                 //           child: ListView.builder(
+                                 //             physics: AlwaysScrollableScrollPhysics(),
+                                 //             itemCount: blocos.length,
+                                 //             itemBuilder: (context, index) {
+                                 //               var bloco = blocos[index];
+                                 //                 return GestureDetector(
+                                 //                   child: Padding(
+                                 //                     padding: const EdgeInsets.all(8.0),
+                                 //                     child: Container(
+                                 //                       width: 100,
+                                 //                       height: 100,
+                                 //                       decoration: BoxDecoration(
+                                 //                         color: Colors.red,
+                                 //                         borderRadius: BorderRadius.circular(20),
+                                 //                          boxShadow: const [
+                                 //                             BoxShadow(
+                                 //                               color: Colors.grey,
+                                 //                               blurRadius: 10,
+                                 //                               offset: Offset(2, 4), // Shadow position
+                                 //                             ),
+                                 //                           ],
+                                 //                       ),
+                                        
+                                 //                       child: Padding(
+                                 //                         padding: const EdgeInsets.all(10),
+                                 //                         child: Column(
+                                 //                           mainAxisAlignment: MainAxisAlignment.end,
+                                 //                           children: [
+                                 //                             Text(bloco.title, style: TextStyle(fontSize: 20, fontFamily: 'Poppins'),),
+                                 //                             Row(
+                                 //                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                 //                               children: [
+                                 //                                 Text(bloco.address, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                                 //                                 Text(bloco.dateTime != null ? bloco.dateTime!.hour.toString() + ':' + bloco.dateTime!.minute.toString() : 'Horário Indefinido' ),
+                                 //                               ],
+                                 //                             )
+                                 //                           ],
+                                 //                         ),
+                                 //                       ),
+                                      
+                                 //                     ),
+                                 //                   ),
+                                 //                 );
+                                 //             },
+                                 //           ),
+                                 //         ),
+                                 //       );
+                                 //                   }
+                          
+                                 //                 ),
+                                 //     ],
+                                 //   ),
+                                 // ),
+                   ),
+                 ),
+                ],
+              ),
+          
+            
+                ]
+              );
+                },
+        ),
         
       ),
     );
