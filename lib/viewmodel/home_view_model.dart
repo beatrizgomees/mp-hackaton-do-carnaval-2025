@@ -1,4 +1,5 @@
 import 'package:carnaval_no_bolso_app/model/bloco.dart';
+import 'package:carnaval_no_bolso_app/model/bloco_location.dart';
 import 'package:carnaval_no_bolso_app/service/bloco_service_impl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -11,15 +12,13 @@ class HomeViewModel extends ChangeNotifier{
 BlocoServiceImpl blocoServiceImpl = BlocoServiceImpl();
 
 List<Bloco> _blocoList = [];
-String address = ""; 
+List<Bloco> get blocoList => _blocoList;
+String city = ""; 
+double latitude = 0.0;
+double longitude = 0.0;
 
-List<Bloco> nearbyBlocos = [];
+List<Bloco> blocosProximos = [];
 
-
-initState(){
-
-
-}
 
 
 Future<List<Bloco>> fetchAllBlocos() async{
@@ -27,15 +26,12 @@ Future<List<Bloco>> fetchAllBlocos() async{
     
    _blocoList = await blocoServiceImpl.getAllBloco();
     notifyListeners();
-    getBlocoProxUser(address);
-    return _blocoList;
     }catch (e){
       print('Erro ao buscar contatos: $e ');
-      return _blocoList;
+   
     }
 
-
-
+    return _blocoList;
 }
 
 
@@ -68,7 +64,6 @@ Future<List<Bloco>> fetchAllBlocos() async{
     
     currentPosition = LatLng(position.latitude, position.longitude);
    
-    getAddressFromLatLong(currentPosition.latitude, currentPosition.longitude);
     notifyListeners();
     
     print(currentPosition);
@@ -79,24 +74,36 @@ Future<List<Bloco>> fetchAllBlocos() async{
 
 
 
-// Future<void> getLatLongFromAddress(String address) async {
-//   try {
-//     List<Location> locations = await locationFromAddress(address);
+Future<List<BlocoLocation>> getLatLongFromAddress(List<Bloco> latLongBlockList) async {
 
-//     if (locations.isNotEmpty) {
-//       double latitude = locations.first.latitude;
-//       double longitude = locations.first.longitude;
+    List<Location> locations = [];	
+    List<BlocoLocation> blocoLocationList = [];	
+  try {
+    for (var element in latLongBlockList) {
+      // Await the asynchronous operation
+      locations = await locationFromAddress(element.address);
 
-//       print('Latitude: $latitude, Longitude: $longitude');
-//     } else {
-//       print('Endereço não encontrado!');
-//     }
-//   } catch (e) {
-//     print('Erro ao converter endereço: $e');
-//   }
-// }
+      if (locations.isNotEmpty) {
+        double latitude = locations.first.latitude;
+        double longitude = locations.first.longitude;
+        print('Latitude: $latitude, Longitude: $longitude');
 
+        // Add the result to the list
+        blocoLocationList.add(BlocoLocation(latitude, longitude, element.title));
+      } else {
+        print('Endereço não encontrado!');
+      }
+      
+    }
 
+    // Return the fully populated list after the loop
+    return blocoLocationList;
+  } catch (e) {
+    print('Error: $e');
+    return []; // Return an empty list in case of an error
+  }
+
+}
 
 
 Future<String> getAddressFromLatLong(double latitude, double longitude) async {
@@ -106,27 +113,24 @@ Future<String> getAddressFromLatLong(double latitude, double longitude) async {
     if (placemarks.isNotEmpty) {
 
       Placemark place = placemarks.first;
-      address =  "${place.subAdministrativeArea}";
-      getBlocoProxUser(address);
-     
-      
+      city =  "${place.subAdministrativeArea}";
+      notifyListeners();
     } else {
       print("Nenhum endereço encontrado!");
     }
   } catch (e) {
     print("Erro ao obter endereço: $e");
   }
-    return address;
+    return city;
 }
 
-List<Bloco> getBlocoProxUser(String  address){
-  _blocoList.forEach((element) {
-    if(element.city == address){
-      nearbyBlocos.add(element);
-    }
-    },
-  );
-  return nearbyBlocos;
+Future<List<Bloco>> getNearestCarnivalBlock() async {
+  if(city.isNotEmpty){
+  blocosProximos = await blocoServiceImpl.getBlocosByCity(city);
+  notifyListeners();
+  }
+
+   return blocosProximos;
 }
 
 

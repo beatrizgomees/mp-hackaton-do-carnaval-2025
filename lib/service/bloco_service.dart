@@ -6,5 +6,6 @@ abstract class BlocoService {
 
   Future<Bloco> getBloco();
   Future<List<Bloco>> getAllBloco();
+  Future<List<Bloco>> getBlocosByCity(String city);
 
 }

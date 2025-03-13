@@ -18,10 +18,9 @@ class BlocoServiceImpl  implements BlocoService{
   @override
   Future<List<Bloco>> getAllBloco() async {
     List<Bloco> tempBlocos = [];
-    int currentPage = 1;
     bool hasMore = true;
 
-    while (hasMore) {
+    while (hasMore && currentPage <= 210) {
       final response = await http.get(
         Uri.parse('https://apis.codante.io/api/bloquinhos2025/agenda?page=$currentPage'),
       );
@@ -56,6 +55,8 @@ class BlocoServiceImpl  implements BlocoService{
       }
       
     }
+
+   allBlocos.addAll(tempBlocos);
   return tempBlocos;
 
 }
@@ -64,6 +65,34 @@ class BlocoServiceImpl  implements BlocoService{
   Future<Bloco> getBloco() {
     // TODO: implement getBloco
     throw UnimplementedError();
+  }
+  
+  @override
+  Future<List<Bloco>> getBlocosByCity(String city) async {
+    List<Bloco> blocosPorCidade = [];
+    int page = 1;
+    bool hasMore = true;
+    Set<int> blocosIds = {}; // Set para armazenar os IDs dos blocos já adicionados
+
+    while (hasMore) {
+      final blocos = await getAllBloco();
+      final blocosFiltrados = blocos.where((bloco) => bloco.city == city && !blocosIds.contains(bloco.id)).toList();
+
+      if (blocosFiltrados.isEmpty) {
+        hasMore = false;
+      } else {
+        blocosPorCidade.addAll(blocosFiltrados);
+        blocosIds.addAll(blocosFiltrados.map((bloco) => bloco.id));
+
+      }
+
+      // if (blocos.length < pageSize) {
+      //   hasMore = false;
+      // }
+
+    }
+    blocosProximos.addAll(blocosPorCidade);
+     return blocosPorCidade;
   }
   
 
